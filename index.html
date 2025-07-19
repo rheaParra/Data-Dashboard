@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Operations Specialist Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --amazon-blue: linear-gradient(135deg, #146eb4 0%, #1a3e72 100%);
+            --shopify-purple: linear-gradient(135deg, #96bf48 0%, #5e8e3e 100%);
+            --ebay-orange: linear-gradient(135deg, #e53238 0%, #b31b1b 100%);
+            --text-dark: #1a1a1a;
+            --text-light: #f5f5f5;
+            --bg-gradient: linear-gradient(to right, #f5f7fa 0%, #e4e8eb 100%);
+        }
+        
+        .platform-card {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        .platform-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15);
+        }
+        .platform-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+        .platform-card.amazon-card::before {
+            background: var(--amazon-blue);
+        }
+        .platform-card.shopify-card::before {
+            background: var(--shopify-purple);
+        }
+        .platform-card.ebay-card::before {
+            background: var(--ebay-orange);
+        }
+        
+        .data-table {
+            height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .data-table::-webkit-scrollbar {
+            width: 6px;
+        }
+        .data-table::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-12 text-center bg-gradient-to-br from-indigo-600 to-purple-700 py-14 px-6 rounded-lg shadow-xl">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-5xl md:text-6xl font-extrabold mb-6">
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-500 to-orange-500">
+                        Advanced Data Dashboard
+                    </span>
+                </h1>
+                <p class="text-xl text-gray-700">
+                    <span class="bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-inline inline-flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 7.879a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L8 5.586v12.828l2.293-2.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L6 18.414v-12.8l-2.293 2.3a1 1 0 01-1.414-1.5l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Multi-platform analytics with automated reconciliation
+                    </span>
+                </p>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Platform Cards -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex items-center mb-3">
+                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                        <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6 2.7-6 6-6zm0 2C9.8 4 8 5.8 8 8s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 12c-4.3 0-8 1.8-8 4v2h16v-2c0-2.2-3.7-4-8-4z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-xl text-gray-800">Amazon</h3>
+                </div>
+                <div class="space-y-3">
+                    <p class="text-gray-600 text-base">Order count: 
+                        <span id="amazon-count" class="font-bold text-gray-900">2</span>
+                    </p>
+                    <p class="text-gray-600 text-base">Total sales: 
+                        <span id="amazon-total" class="font-bold text-gray-900">$45.49</span>
+                    </p>
+                    <div class="h-3 w-full bg-gray-200 rounded-full overflow-hidden mt-3">
+                        <div class="h-full bg-gradient-to-r from-blue-500 to-blue-700 flex items-center justify-center text-xs text-white font-bold" style="width: 75%">75%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="platform-card shopify-card bg-white shadow-lg p-6">
+                <h3 class="font-semibold text-lg text-gray-800 mb-2">Shopify</h3>
+                <p class="text-gray-600 mb-4">Order count: <span id="shopify-count" class="font-medium">2</span></p>
+                <p class="text-gray-600">Total sales: <span id="shopify-total" class="font-medium">€43.75</span></p>
+            </div>
+            
+            <div class="platform-card ebay-card bg-white shadow-lg p-6">
+                <h3 class="font-semibold text-lg text-gray-800 mb-2">eBay</h3>
+                <p class="text-gray-600 mb-4">Order count: <span id="ebay-count" class="font-medium">2</span></p>
+                <p class="text-gray-600">Total sales: <span id="ebay-total" class="font-medium">£35.49</span></p>
+            </div>
+        </div>
+
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-8 border border-gray-100 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30"></div>
+            <div class="absolute top-0 right-0 w-48 h-48 bg-blue-100 rounded-full filter blur-3xl opacity-10"></div>
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-purple-100 rounded-full filter blur-3xl opacity-10"></div>
+            
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <svg class="w-6 h-6 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                Integrated Sales Analytics
+            </h2>
+            <div class="h-96 p-6 bg-white rounded-lg shadow-md">
+                <canvas id="salesChart" style="background-color: white; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px;"></canvas>
+            </div>
+            <div class="flex justify-between mt-4 text-sm text-gray-500">
+                <span>Updated: Today at <span id="current-time"></span></span>
+                <button class="text-blue-600 hover:text-blue-800 flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path>
+                    </svg>
+                    Refresh Data
+                </button>
+            </div>
+        </div>
+
+        <!-- Data Quality Section -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Data Quality Metrics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-blue-50 p-4 rounded-lg shadow-md">
+                    <h3 class="font-bold text-blue-800 text-lg mb-2">Amazon</h3>
+                    <p class="text-md text-gray-700">Duplicates: <span class="font-semibold">0</span></p>
+                    <p class="text-md text-gray-700">Missing Values: <span class="font-semibold">0</span></p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg shadow-md">
+                    <h3 class="font-bold text-purple-800 text-lg mb-2">Shopify</h3>
+                    <p class="text-md text-gray-700">Duplicates: <span class="font-semibold">0</span></p>
+                    <p class="text-md text-gray-700">Missing Values: <span class="font-semibold">0</span></p>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg shadow-md">
+                    <h3 class="font-bold text-yellow-800 text-lg mb-2">eBay</h3>
+                    <p class="text-md text-gray-700">Duplicates: <span class="font-semibold">0</span></p>
+                    <p class="text-md text-gray-700">Missing Values: <span class="font-semibold">0</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Automation Section -->
+        <div class="bg-white rounded-xl p-6 mb-8 border border-gray-200">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-50/20 to-purple-50/20 z-0"></div>
+            <div class="relative z-10">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 flex items-center">
+                    <svg class="w-8 h-8 text-blue-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                    </svg>
+                    Automated Reconciliation System
+                </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Data Pipelines</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">ERP Extraction</span>
+                            <div class="w-32 bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-green-500 h-2.5 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <!-- More pipeline status items -->
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl border-2 border-green-200 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Automation Status</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="relative flex h-3 w-3">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                            </span>
+                            <span class="text-gray-700">Reconciliation Job</span>
+                        </div>
+                        <!-- More status items -->
+                    </div>
+                </div>
+                
+                <div class="bg-white/80 backdrop-blur p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Recent Alerts</h3>
+                    <div class="space-y-2">
+                        <div class="text-sm text-gray-600 flex items-start gap-2">
+                            <svg class="w-4 h-4 text-yellow-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1
